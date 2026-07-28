@@ -9,7 +9,7 @@ import cv2
 # =========================================================
 
 st.set_page_config(
-    page_title="Lumbar MRI Analyzer V3",
+    page_title="Lumbar MRI Analyzer V3.1",
     page_icon="🩻",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -17,52 +17,191 @@ st.set_page_config(
 
 
 # =========================================================
-# RTL / Persian CSS
+# Responsive RTL CSS
 # =========================================================
 
 st.markdown(
     """
     <style>
 
+    /* ---------- General ---------- */
+
     html, body, [class*="css"] {
         direction: rtl;
         text-align: right;
     }
 
+    .block-container {
+        padding-top: 1.5rem;
+        padding-bottom: 2rem;
+        max-width: 1400px;
+    }
+
+    /* ---------- Titles ---------- */
+
     .main-title {
         font-size: 34px;
         font-weight: 800;
-        margin-bottom: 5px;
+        line-height: 1.4;
+        margin-bottom: 6px;
     }
 
     .subtitle {
         font-size: 16px;
-        color: #666;
+        line-height: 1.6;
         margin-bottom: 25px;
     }
 
-    .info-box {
-        padding: 15px;
-        border-radius: 12px;
-        background-color: #f1f5f9;
-        border: 1px solid #dbe3ec;
-        margin-bottom: 15px;
-    }
+    /* ---------- Boxes ---------- */
 
-    .warning-box {
-        padding: 15px;
-        border-radius: 12px;
-        background-color: #fff7ed;
-        border: 1px solid #fed7aa;
-        margin-top: 15px;
-    }
-
+    .info-box,
+    .warning-box,
     .success-box {
         padding: 15px;
         border-radius: 12px;
+        margin-bottom: 15px;
+        line-height: 1.8;
+    }
+
+    .info-box {
+        background-color: #f1f5f9;
+        border: 1px solid #dbe3ec;
+    }
+
+    .warning-box {
+        background-color: #fff7ed;
+        border: 1px solid #fed7aa;
+        margin-top: 20px;
+    }
+
+    .success-box {
         background-color: #f0fdf4;
         border: 1px solid #bbf7d0;
-        margin-top: 15px;
+    }
+
+    /* ---------- Buttons ---------- */
+
+    .stButton > button {
+        width: 100%;
+        min-height: 48px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    /* ---------- File uploader ---------- */
+
+    [data-testid="stFileUploader"] {
+        width: 100%;
+    }
+
+    /* ---------- Images ---------- */
+
+    [data-testid="stImage"] img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+    }
+
+    /* ---------- Sidebar ---------- */
+
+    [data-testid="stSidebar"] {
+        direction: rtl;
+    }
+
+    [data-testid="stSidebar"] * {
+        text-align: right;
+    }
+
+    /* ---------- Mobile ---------- */
+
+    @media (max-width: 768px) {
+
+        .block-container {
+            padding-left: 0.8rem;
+            padding-right: 0.8rem;
+            padding-top: 1rem;
+        }
+
+        .main-title {
+            font-size: 24px;
+            line-height: 1.5;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        h1 {
+            font-size: 24px !important;
+        }
+
+        h2 {
+            font-size: 21px !important;
+        }
+
+        h3 {
+            font-size: 18px !important;
+        }
+
+        .info-box,
+        .warning-box,
+        .success-box {
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        .stButton > button {
+            min-height: 52px;
+            font-size: 15px;
+        }
+
+        [data-testid="stFileUploader"] {
+            font-size: 14px;
+        }
+
+        [data-testid="stImage"] img {
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        /* Prevent horizontal overflow */
+
+        section.main {
+            overflow-x: hidden;
+        }
+
+        /* Better mobile columns */
+
+        [data-testid="column"] {
+            width: 100% !important;
+            flex: 1 1 100% !important;
+        }
+
+    }
+
+    /* ---------- Very small phones ---------- */
+
+    @media (max-width: 480px) {
+
+        .block-container {
+            padding-left: 0.55rem;
+            padding-right: 0.55rem;
+        }
+
+        .main-title {
+            font-size: 21px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+        }
+
+        .stButton > button {
+            min-height: 50px;
+        }
+
     }
 
     </style>
@@ -76,12 +215,12 @@ st.markdown(
 # =========================================================
 
 st.markdown(
-    '<div class="main-title">🩻 آنالایزر MRI ستون فقرات کمری — نسخه V3</div>',
+    '<div class="main-title">🩻 آنالایزر MRI ستون فقرات کمری — V3.1</div>',
     unsafe_allow_html=True,
 )
 
 st.markdown(
-    '<div class="subtitle">Lumbar MRI Analyzer V3 | Prototype for Sagittal T2 analysis</div>',
+    '<div class="subtitle">Lumbar MRI Analyzer | Prototype for Sagittal T2 Analysis</div>',
     unsafe_allow_html=True,
 )
 
@@ -128,9 +267,9 @@ with st.sidebar:
 st.markdown(
     """
     <div class="info-box">
-    <b>هدف این نسخه:</b><br>
-    بارگذاری تصویر Sagittal MRI و انجام localization اولیه برای
-    مهره‌های کمری و فضاهای دیسکی L1 تا S1.
+    <b>هدف نسخه V3.1:</b><br>
+    بارگذاری تصویر Sagittal MRI و انجام Localization اولیه
+    برای مهره‌های کمری و فضاهای دیسکی L1 تا S1.
     </div>
     """,
     unsafe_allow_html=True,
@@ -157,22 +296,30 @@ def load_image(uploaded):
 
 
 def detect_horizontal_lines(image):
-    """
-    Prototype localization.
-    This is NOT a validated medical AI model.
-    """
 
     img = np.array(image)
 
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    gray = cv2.cvtColor(
+        img,
+        cv2.COLOR_RGB2GRAY
+    )
 
-    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+    gray = cv2.GaussianBlur(
+        gray,
+        (5, 5),
+        0
+    )
 
-    edges = cv2.Canny(gray, 40, 120)
+    edges = cv2.Canny(
+        gray,
+        40,
+        120
+    )
 
     height, width = gray.shape
 
-    # Focus on central spinal region
+    # Central spinal region
+
     x1 = int(width * 0.25)
     x2 = int(width * 0.75)
 
@@ -186,358 +333,31 @@ def detect_horizontal_lines(image):
     horizontal = cv2.morphologyEx(
         roi,
         cv2.MORPH_OPEN,
-        horizontal_kernel,
+        horizontal_kernel
     )
 
-    projection = np.sum(horizontal, axis=1)
+    projection = np.sum(
+        horizontal,
+        axis=1
+    )
 
-    # Find peaks
-    threshold = np.percentile(projection, 90)
+    threshold = np.percentile(
+        projection,
+        90
+    )
 
-    candidates = np.where(projection > threshold)[0]
+    candidates = np.where(
+        projection > threshold
+    )[0]
 
-    # Group neighboring y coordinates
     groups = []
 
     if len(candidates) > 0:
 
-        current_group = [candidates[0]]
+        current_group = [
+            candidates[0]
+        ]
 
         for y in candidates[1:]:
 
-            if y - current_group[-1] <= 8:
-                current_group.append(y)
-
-            else:
-                groups.append(current_group)
-                current_group = [y]
-
-        groups.append(current_group)
-
-    centers = []
-
-    for group in groups:
-
-        center = int(np.mean(group))
-
-        if not centers or abs(center - centers[-1]) > 15:
-            centers.append(center)
-
-    return centers
-
-
-def create_annotation(image, lines, show_grid=True, show_labels=True):
-
-    img = image.copy()
-
-    draw = ImageDraw.Draw(img)
-
-    width, height = img.size
-
-    # Try to load a font
-    try:
-        font = ImageFont.truetype(
-            "DejaVuSans.ttf",
-            max(14, width // 55),
-        )
-    except:
-        font = ImageFont.load_default()
-
-    # Grid
-    if show_grid:
-
-        for i in range(1, 5):
-
-            y = int(height * i / 5)
-
-            draw.line(
-                [(0, y), (width, y)],
-                fill=(0, 180, 255),
-                width=1,
-            )
-
-    # Localization lines
-    for i, y in enumerate(lines):
-
-        draw.line(
-            [(0, y), (width, y)],
-            fill=(255, 80, 80),
-            width=3,
-        )
-
-        if show_labels:
-
-            label = f"Level {i + 1}"
-
-            draw.rectangle(
-                [(10, y - 20), (120, y + 5)],
-                fill=(0, 0, 0),
-            )
-
-            draw.text(
-                (15, y - 18),
-                label,
-                fill=(255, 255, 255),
-                font=font,
-            )
-
-    return img
-
-
-# =========================================================
-# Main Analysis
-# =========================================================
-
-if uploaded_file is not None:
-
-    image = load_image(uploaded_file)
-
-    st.success("تصویر با موفقیت دریافت شد.")
-
-    col1, col2 = st.columns([2, 1])
-
-    # -----------------------------------------------------
-    # Image
-    # -----------------------------------------------------
-
-    with col1:
-
-        st.subheader("🖼️ تصویر MRI")
-
-        st.image(
-            image,
-            use_container_width=True,
-        )
-
-    # -----------------------------------------------------
-    # Information
-    # -----------------------------------------------------
-
-    with col2:
-
-        st.subheader("📋 اطلاعات تصویر")
-
-        st.write(
-            f"**عرض:** {image.width} px"
-        )
-
-        st.write(
-            f"**ارتفاع:** {image.height} px"
-        )
-
-        st.write(
-            f"**فرمت:** {image.format or 'Unknown'}"
-        )
-
-        st.divider()
-
-        st.write("**نوع تحلیل:**")
-
-        st.info(
-            "Prototype Localization"
-        )
-
-    # -----------------------------------------------------
-    # Analyze button
-    # -----------------------------------------------------
-
-    st.divider()
-
-    if st.button(
-        "🔍 شروع تحلیل MRI",
-        type="primary",
-        use_container_width=True,
-    ):
-
-        with st.spinner("در حال تحلیل تصویر..."):
-
-            lines = detect_horizontal_lines(image)
-
-        st.subheader("📍 نتیجه Localization")
-
-        if len(lines) == 0:
-
-            st.warning(
-                "خط مشخصی برای Localization اولیه پیدا نشد."
-            )
-
-        else:
-
-            annotated = create_annotation(
-                image,
-                lines,
-                show_grid=show_grid,
-                show_labels=show_labels,
-            )
-
-            st.image(
-                annotated,
-                use_container_width=True,
-                caption="نمایش Localization اولیه",
-            )
-
-            st.divider()
-
-            # -------------------------------------------------
-            # Confidence
-            # -------------------------------------------------
-
-            estimated_confidence = min(
-                95,
-                max(
-                    35,
-                    45 + len(lines) * 7
-                ),
-            )
-
-            st.subheader("📊 Confidence")
-
-            st.progress(
-                estimated_confidence / 100
-            )
-
-            st.write(
-                f"Confidence تخمینی: **{estimated_confidence}%**"
-            )
-
-            if estimated_confidence >= confidence_threshold:
-
-                st.success(
-                    "نتیجه از آستانه Confidence تعیین‌شده عبور کرده است."
-                )
-
-            else:
-
-                st.warning(
-                    "Confidence پایین است؛ بررسی دستی توصیه می‌شود."
-                )
-
-            # -------------------------------------------------
-            # Level Table
-            # -------------------------------------------------
-
-            st.subheader("🦴 سطوح پیشنهادی")
-
-            levels = [
-                "L1",
-                "L2",
-                "L3",
-                "L4",
-                "L5",
-                "S1",
-            ]
-
-            for i, level in enumerate(levels):
-
-                if i < len(lines):
-
-                    confidence = min(
-                        95,
-                        max(
-                            30,
-                            estimated_confidence - abs(i - 2) * 5
-                        ),
-                    )
-
-                    c1, c2, c3 = st.columns(3)
-
-                    with c1:
-                        st.write(f"**{level}**")
-
-                    with c2:
-                        st.write(
-                            f"موقعیت Y: {lines[i]}"
-                        )
-
-                    with c3:
-                        st.write(
-                            f"Confidence: {confidence}%"
-                        )
-
-    # =====================================================
-    # Test Section
-    # =====================================================
-
-    st.divider()
-
-    st.subheader("🧪 بخش تست")
-
-    st.write(
-        "این بخش برای بررسی عملکرد Prototype روی تصاویر مختلف طراحی شده است."
-    )
-
-    test_col1, test_col2 = st.columns(2)
-
-    with test_col1:
-
-        if st.button(
-            "✅ اجرای تست Localization",
-            use_container_width=True,
-        ):
-
-            st.success(
-                "تست اولیه با موفقیت اجرا شد."
-            )
-
-            st.write(
-                "Image preprocessing: OK"
-            )
-
-            st.write(
-                "Edge detection: OK"
-            )
-
-            st.write(
-                "Horizontal structure detection: OK"
-            )
-
-    with test_col2:
-
-        if st.button(
-            "🔄 پاک کردن نتیجه",
-            use_container_width=True,
-        ):
-
-            st.rerun()
-
-
-else:
-
-    # =====================================================
-    # Empty State
-    # =====================================================
-
-    st.info(
-        "برای شروع، یک تصویر Sagittal T2 از MRI کمر بارگذاری کنید."
-    )
-
-    st.markdown(
-        """
-        ### قابلیت‌های V3
-
-        - 🩻 نمایش تصویر MRI
-        - 📍 Localization اولیه ساختارهای افقی
-        - 🦴 پیشنهاد سطوح L1 تا S1
-        - 📊 نمایش Confidence
-        - 🧪 بخش تست
-        - 🇮🇷 رابط فارسی و RTL
-        - 🖥️ طراحی مناسب برای موبایل و دسکتاپ
-        """
-    )
-
-
-# =========================================================
-# Medical Disclaimer
-# =========================================================
-
-st.markdown(
-    """
-    <div class="warning-box">
-    ⚠️ <b>هشدار پزشکی:</b><br>
-    این نرم‌افزار یک Prototype پژوهشی است و الگوریتم Localization
-    فعلی Medical AI Validated نیست. نتایج آن نباید به‌عنوان تشخیص
-    قطعی پزشکی یا جایگزین تفسیر رادیولوژیست استفاده شود.
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+            if y - current
