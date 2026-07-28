@@ -360,4 +360,4 @@ def detect_horizontal_lines(image):
 
         for y in candidates[1:]:
 
-            if y - current
+            if y - current:
