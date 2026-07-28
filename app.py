@@ -17,14 +17,12 @@ st.set_page_config(
 
 
 # =========================================================
-# Responsive RTL CSS
+# RTL + Responsive CSS
 # =========================================================
 
 st.markdown(
     """
     <style>
-
-    /* ---------- General ---------- */
 
     html, body, [class*="css"] {
         direction: rtl;
@@ -32,32 +30,28 @@ st.markdown(
     }
 
     .block-container {
-        padding-top: 1.5rem;
+        padding-top: 1.2rem;
         padding-bottom: 2rem;
         max-width: 1400px;
     }
 
-    /* ---------- Titles ---------- */
-
     .main-title {
-        font-size: 34px;
+        font-size: 32px;
         font-weight: 800;
-        line-height: 1.4;
-        margin-bottom: 6px;
+        line-height: 1.5;
+        margin-bottom: 5px;
     }
 
     .subtitle {
-        font-size: 16px;
-        line-height: 1.6;
-        margin-bottom: 25px;
+        font-size: 15px;
+        line-height: 1.7;
+        margin-bottom: 20px;
     }
-
-    /* ---------- Boxes ---------- */
 
     .info-box,
     .warning-box,
     .success-box {
-        padding: 15px;
+        padding: 14px;
         border-radius: 12px;
         margin-bottom: 15px;
         line-height: 1.8;
@@ -71,15 +65,12 @@ st.markdown(
     .warning-box {
         background-color: #fff7ed;
         border: 1px solid #fed7aa;
-        margin-top: 20px;
     }
 
     .success-box {
         background-color: #f0fdf4;
         border: 1px solid #bbf7d0;
     }
-
-    /* ---------- Buttons ---------- */
 
     .stButton > button {
         width: 100%;
@@ -89,21 +80,11 @@ st.markdown(
         font-weight: 600;
     }
 
-    /* ---------- File uploader ---------- */
-
-    [data-testid="stFileUploader"] {
-        width: 100%;
-    }
-
-    /* ---------- Images ---------- */
-
     [data-testid="stImage"] img {
         max-width: 100%;
         height: auto;
         border-radius: 10px;
     }
-
-    /* ---------- Sidebar ---------- */
 
     [data-testid="stSidebar"] {
         direction: rtl;
@@ -113,95 +94,54 @@ st.markdown(
         text-align: right;
     }
 
-    /* ---------- Mobile ---------- */
-
     @media (max-width: 768px) {
 
         .block-container {
-            padding-left: 0.8rem;
-            padding-right: 0.8rem;
-            padding-top: 1rem;
+            padding-left: 0.7rem;
+            padding-right: 0.7rem;
+            padding-top: 0.8rem;
         }
 
         .main-title {
-            font-size: 24px;
-            line-height: 1.5;
+            font-size: 23px;
         }
 
         .subtitle {
             font-size: 13px;
-            line-height: 1.7;
         }
 
         h1 {
-            font-size: 24px !important;
+            font-size: 23px !important;
         }
 
         h2 {
-            font-size: 21px !important;
+            font-size: 20px !important;
         }
 
         h3 {
-            font-size: 18px !important;
+            font-size: 17px !important;
         }
 
         .info-box,
         .warning-box,
         .success-box {
-            padding: 12px;
-            font-size: 14px;
+            padding: 11px;
+            font-size: 13px;
         }
 
         .stButton > button {
-            min-height: 52px;
+            min-height: 50px;
             font-size: 15px;
         }
-
-        [data-testid="stFileUploader"] {
-            font-size: 14px;
-        }
-
-        [data-testid="stImage"] img {
-            width: 100% !important;
-            max-width: 100% !important;
-        }
-
-        /* Prevent horizontal overflow */
 
         section.main {
             overflow-x: hidden;
         }
 
-        /* Better mobile columns */
-
         [data-testid="column"] {
             width: 100% !important;
             flex: 1 1 100% !important;
         }
-
-    }
-
-    /* ---------- Very small phones ---------- */
-
-    @media (max-width: 480px) {
-
-        .block-container {
-            padding-left: 0.55rem;
-            padding-right: 0.55rem;
-        }
-
-        .main-title {
-            font-size: 21px;
-        }
-
-        .subtitle {
-            font-size: 12px;
-        }
-
-        .stButton > button {
-            min-height: 50px;
-        }
-
     }
 
     </style>
@@ -277,23 +217,16 @@ st.markdown(
 
 
 # =========================================================
-# Upload
-# =========================================================
-
-uploaded_file = st.file_uploader(
-    "📤 تصویر Sagittal T2 را بارگذاری کنید",
-    type=["png", "jpg", "jpeg", "bmp", "tif", "tiff"],
-)
-
-
-# =========================================================
-# Functions
+# Image Loading
 # =========================================================
 
 def load_image(uploaded):
-    image = Image.open(uploaded).convert("RGB")
-    return image
+    return Image.open(uploaded).convert("RGB")
 
+
+# =========================================================
+# Image Processing
+# =========================================================
 
 def detect_horizontal_lines(image):
 
@@ -319,15 +252,19 @@ def detect_horizontal_lines(image):
     height, width = gray.shape
 
     # Central spinal region
-
     x1 = int(width * 0.25)
     x2 = int(width * 0.75)
 
     roi = edges[:, x1:x2]
 
+    kernel_width = max(
+        10,
+        width // 15
+    )
+
     horizontal_kernel = cv2.getStructuringElement(
         cv2.MORPH_RECT,
-        (max(10, width // 15), 1)
+        (kernel_width, 1)
     )
 
     horizontal = cv2.morphologyEx(
@@ -340,6 +277,9 @@ def detect_horizontal_lines(image):
         horizontal,
         axis=1
     )
+
+    if projection.max() == 0:
+        return []
 
     threshold = np.percentile(
         projection,
@@ -360,4 +300,376 @@ def detect_horizontal_lines(image):
 
         for y in candidates[1:]:
 
-            if y - current:
+            if y - current_group[-1] <= 5:
+                current_group.append(y)
+
+            else:
+                groups.append(
+                    current_group
+                )
+
+                current_group = [
+                    y
+                ]
+
+        groups.append(
+            current_group
+        )
+
+    line_positions = []
+
+    for group in groups:
+
+        if len(group) >= 2:
+
+            center_y = int(
+                np.mean(group)
+            )
+
+            line_positions.append(
+                center_y
+            )
+
+    return line_positions
+
+
+# =========================================================
+# Create MRI Overlay
+# =========================================================
+
+def create_overlay(
+    image,
+    line_positions,
+    show_grid=True,
+    show_labels=True
+):
+
+    result = image.copy()
+
+    draw = ImageDraw.Draw(
+        result
+    )
+
+    width, height = result.size
+
+    # -----------------------------------------------------
+    # Guide lines
+    # -----------------------------------------------------
+
+    if show_grid:
+
+        for y in line_positions:
+
+            draw.line(
+                [
+                    (0, y),
+                    (width, y)
+                ],
+                fill=(255, 180, 0),
+                width=2
+            )
+
+    # -----------------------------------------------------
+    # Estimate five disc levels
+    # -----------------------------------------------------
+
+    if len(line_positions) >= 6:
+
+        selected = line_positions[:6]
+
+        disc_positions = []
+
+        for i in range(5):
+
+            y1 = selected[i]
+            y2 = selected[i + 1]
+
+            disc_y = int(
+                (y1 + y2) / 2
+            )
+
+            disc_positions.append(
+                disc_y
+            )
+
+        labels = [
+            "L1-L2",
+            "L2-L3",
+            "L3-L4",
+            "L4-L5",
+            "L5-S1",
+        ]
+
+        for label, y in zip(
+            labels,
+            disc_positions
+        ):
+
+            draw.line(
+                [
+                    (0, y),
+                    (width, y)
+                ],
+                fill=(0, 255, 0),
+                width=3
+            )
+
+            if show_labels:
+
+                draw.text(
+                    (10, max(5, y - 25)),
+                    label,
+                    fill=(0, 255, 0)
+                )
+
+    # -----------------------------------------------------
+    # Vertebral labels
+    # -----------------------------------------------------
+
+    if show_labels and len(line_positions) >= 6:
+
+        vertebrae = [
+            "L1",
+            "L2",
+            "L3",
+            "L4",
+            "L5",
+            "S1"
+        ]
+
+        for label, y in zip(
+            vertebrae,
+            line_positions[:6]
+        ):
+
+            draw.text(
+                (width - 45, max(5, y - 18)),
+                label,
+                fill=(255, 255, 0)
+            )
+
+    return result
+
+
+# =========================================================
+# Analysis
+# =========================================================
+
+def analyze_image(image):
+
+    lines = detect_horizontal_lines(
+        image
+    )
+
+    confidence = min(
+        95,
+        40 + len(lines) * 8
+    )
+
+    return {
+        "lines": lines,
+        "confidence": confidence
+    }
+
+
+# =========================================================
+# Upload
+# =========================================================
+
+uploaded_file = st.file_uploader(
+    "📤 تصویر Sagittal T2 را بارگذاری کنید",
+    type=[
+        "png",
+        "jpg",
+        "jpeg",
+        "bmp",
+        "tif",
+        "tiff"
+    ],
+)
+
+
+# =========================================================
+# Main Analysis
+# =========================================================
+
+if uploaded_file is not None:
+
+    try:
+
+        image = load_image(
+            uploaded_file
+        )
+
+        st.success(
+            "تصویر با موفقیت بارگذاری شد."
+        )
+
+        st.subheader(
+            "🖼️ تصویر ورودی"
+        )
+
+        st.image(
+            image,
+            use_container_width=True
+        )
+
+        if st.button(
+            "🔍 شروع تحلیل MRI"
+        ):
+
+            with st.spinner(
+                "در حال پردازش تصویر..."
+            ):
+
+                result = analyze_image(
+                    image
+                )
+
+            confidence = result[
+                "confidence"
+            ]
+
+            lines = result[
+                "lines"
+            ]
+
+            st.divider()
+
+            st.subheader(
+                "📊 نتیجه تحلیل اولیه"
+            )
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+
+                st.metric(
+                    "تعداد خطوط شناسایی‌شده",
+                    len(lines)
+                )
+
+            with col2:
+
+                st.metric(
+                    "Confidence",
+                    f"{confidence}%"
+                )
+
+            # -------------------------------------------------
+            # Confidence
+            # -------------------------------------------------
+
+            if confidence >= confidence_threshold:
+
+                st.success(
+                    f"Confidence قابل قبول است: {confidence}%"
+                )
+
+            else:
+
+                st.warning(
+                    f"Confidence پایین است: {confidence}%"
+                )
+
+            # -------------------------------------------------
+            # Overlay
+            # -------------------------------------------------
+
+            overlay = create_overlay(
+                image,
+                lines,
+                show_grid,
+                show_labels
+            )
+
+            st.subheader(
+                "🩻 Localization اولیه"
+            )
+
+            st.image(
+                overlay,
+                use_container_width=True
+            )
+
+            # -------------------------------------------------
+            # Disc levels
+            # -------------------------------------------------
+
+            st.subheader(
+                "📍 فضاهای دیسکی"
+            )
+
+            disc_levels = [
+                "L1-L2",
+                "L2-L3",
+                "L3-L4",
+                "L4-L5",
+                "L5-S1"
+            ]
+
+            for level in disc_levels:
+
+                st.write(
+                    f"• {level} — بررسی اولیه"
+                )
+
+            # -------------------------------------------------
+            # Warning
+            # -------------------------------------------------
+
+            st.markdown(
+                """
+                <div class="warning-box">
+                ⚠️ <b>هشدار مهم:</b><br>
+                این نرم‌افزار یک Prototype پژوهشی است.
+                نتایج Localization و Confidence تشخیص پزشکی
+                محسوب نمی‌شوند و باید توسط پزشک متخصص رادیولوژی
+                بررسی و تأیید شوند.
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    except Exception as e:
+
+        st.error(
+            "خطا در پردازش تصویر"
+        )
+
+        st.code(
+            str(e)
+        )
+
+
+# =========================================================
+# No Image
+# =========================================================
+
+else:
+
+    st.info(
+        "برای شروع، یک تصویر Sagittal T2 را انتخاب کنید."
+    )
+
+    st.markdown(
+        """
+        <div class="warning-box">
+        🧪 <b>Prototype V3.1</b><br>
+        این نسخه برای تست رابط کاربری، پردازش اولیه تصویر
+        و Localization آزمایشی طراحی شده است.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+# =========================================================
+# Footer
+# =========================================================
+
+st.divider()
+
+st.caption(
+    "Lumbar MRI Analyzer V3.1 — Research Prototype | محمد صفری"
+)
